@@ -1,5 +1,6 @@
 package org.chat.server.core;
 
-public interface ChatServerListner {
+public interface ChatServerListener {
     void onChatServerMessage(String msg);
 }
+

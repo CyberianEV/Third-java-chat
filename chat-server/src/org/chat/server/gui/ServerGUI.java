@@ -1,15 +1,15 @@
 package org.chat.server.gui;
 
 import org.chat.server.core.ChatServer;
-import org.chat.server.core.ChatServerListner;
+import org.chat.server.core.ChatServerListener;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class  ServerGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, ChatServerListner {
-    private static final int POS_X = 900;
+public class ServerGUI extends JFrame implements ActionListener, Thread.UncaughtExceptionHandler, ChatServerListener {
+    private static final int POS_X = 800;
     private static final int POS_Y = 200;
     private static final int WIDTH = 600;
     private static final int HEIGHT = 300;
@@ -29,13 +29,13 @@ public class  ServerGUI extends JFrame implements ActionListener, Thread.Uncaugh
         setAlwaysOnTop(true);
         log.setEditable(false);
         log.setLineWrap(true);
-        JScrollPane scrolLog = new JScrollPane(log);
+        JScrollPane scrollLog = new JScrollPane(log);
         btnStart.addActionListener(this);
         btnStop.addActionListener(this);
         panelTop.add(btnStart);
         panelTop.add(btnStop);
         add(panelTop, BorderLayout.NORTH);
-        add(scrolLog,BorderLayout.CENTER);
+        add(scrollLog, BorderLayout.CENTER);
         setVisible(true);
     }
 
