@@ -1,0 +1,37 @@
+15:43:17: Server: Mouse connected.
+15:43:29: Mouse: first attempt
+15:43:32: Mouse: kjhksdkla
+15:43:34: Mouse: jkhdkshkhlkjh
+15:43:36: Mouse: lkjhlkjlkhfsa
+15:44:15: Server: Mouse connected.
+15:44:36: Mouse: Second connection. Switched after Donald
+15:44:37: Mouse: gsgfsdfgs
+15:44:38: Mouse: sfgsfdgsd
+15:44:39: Mouse: sfgsfgsdf
+16:45:16: Server: Mouse connected.
+16:45:27: Mouse: Hey, Mickey's here!
+16:45:38: Duck: Hey Mickey!
+16:46:17: Mouse: dfgdfgd
+16:47:44: Server: Mouse connected.
+16:47:45: Server: Duck connected.
+16:48:02: Mouse: After server was restarted
+16:48:18: Duck: and from here after restart
+16:48:21: Server: Duck disconnected
+17:45:01: Server: Mouse connected.
+17:56:53: Server: Mouse connected.
+17:57:12: Server: Duck connected.
+17:57:20: Server: Duck disconnected
+18:22:47: Server: Mouse connected.
+18:22:54: Mouse: jhgkjkjdgfska
+18:22:56: Mouse: dsfhsdfsdhfkljdhfkljas
+18:22:59: Mouse: dasdfsdfsfasfdasdsdfasddsfsdfs
+18:23:04: Mouse: last one
+18:23:06: Server: Duck disconnected
+18:23:08: Server: Duck connected.
+18:23:44: Server: Mouse connected.
+18:23:45: Server: Duck connected.
+18:24:08: Server: Duck disconnected
+22:08:13: Server: Mouse connected.
+22:08:21: Mouse: 101
+22:08:25: Mouse: 102
+22:08:26: Mouse: 103

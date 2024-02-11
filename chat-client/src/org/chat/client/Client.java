@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
@@ -42,6 +43,8 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
     private final JMenuItem miChangePassword = new JMenuItem("Change Password");
     private final JMenuItem miChangeName = new JMenuItem("Change Name");
 
+    private FileWriter logWriter = null;
+    private File logFile = null;
     private boolean shownIoErrors = false;
     private SocketThread socketThread;
     private PassChanger passChanger;
@@ -183,6 +186,15 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
         }
     }
 
+    private void writeToLogFile(String msg) {
+        try {
+            logWriter.write(msg);
+            logWriter.flush();
+        } catch (IOException e) {
+            showException(Thread.currentThread(), e);
+        }
+    }
+
     public void putLog(String msg) {
         if ("".equals(msg)) return;
         SwingUtilities.invokeLater(new Runnable() {
@@ -207,6 +219,34 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
         //JOptionPane.showMessageDialog(null, msg, "Exception", JOptionPane.ERROR_MESSAGE);
     }
 
+    private void createLogFile (String filename) {
+        String fileFullName = filename + ".txt";
+        logFile = new File(fileFullName);
+        try {
+            logFile.createNewFile();
+        } catch (IOException e) {
+            showException(Thread.currentThread(), e);
+        }
+    }
+
+    private void createWriterStream(File file) {
+        try {
+            logWriter = new FileWriter(file, true);
+        } catch (IOException e) {
+            showException(Thread.currentThread(), e);
+        }
+    }
+
+    private void closeWriterStream() {
+        if (logWriter != null) {
+            try {
+                logWriter.close();
+            } catch (IOException e) {
+                showException(Thread.currentThread(), e);
+            }
+        }
+    }
+
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         e.printStackTrace();
@@ -215,7 +255,7 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
 
     @Override
     public void onSocketStart(SocketThread t, Socket s) {
-        putLog("Start");
+//        putLog("Start");
     }
 
     @Override
@@ -227,6 +267,7 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
         miChangePassword.setEnabled(false);
         setTitle(TITLE);
         userList.setListData(new String[0]);
+        closeWriterStream();
     }
 
     @Override
@@ -252,6 +293,8 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
         switch (msgType) {
             case Messages.AUTH_ACCEPT:
                 setTitle(TITLE + " logged in as: " + arr[1]);
+                createLogFile("history_" + tfLogin.getText());
+                createWriterStream(logFile);
                 break;
             case Messages.AUTH_DENY:
                 putLog("Access Denied");
@@ -268,8 +311,10 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
                 userList.setListData(usersArr);
                 break;
             case Messages.MSG_BROADCAST:
-                log.append(DATE_FORMAT.format(Long.parseLong(arr[1])) + arr[2] + ": " + arr[3] + "\n");
+                String msg = DATE_FORMAT.format(Long.parseLong(arr[1])) + arr[2] + ": " + arr[3] + "\n";
+                log.append(msg);
                 log.setCaretPosition(log.getDocument().getLength());
+                writeToLogFile(msg);
                 break;
             case Messages.PASSCHANGE_SUCCEED:
                 value = arr[1];
@@ -282,6 +327,10 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
             case Messages.FAILED:
                 value = arr[1];
                 JOptionPane.showMessageDialog(this, value, "Something went wrong", JOptionPane.ERROR_MESSAGE);
+                break;
+            case Messages.HISTORY_LOG:
+                log.append(arr[1] + "\n");
+                log.setCaretPosition(log.getDocument().getLength());
                 break;
             default:
                 throw new RuntimeException("Unknown message type: " + msgType);

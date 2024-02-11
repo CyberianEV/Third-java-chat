@@ -1,15 +1,19 @@
 package org.chat.server.core;
 
+import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.chat.common.Messages;
 import org.chat.network.ServerSocketThread;
 import org.chat.network.ServerSocketThreadListener;
 import org.chat.network.SocketThread;
 import org.chat.network.SocketThreadListener;
 
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class ChatServer implements ServerSocketThreadListener, SocketThreadListener {
@@ -20,6 +24,9 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     int counter = 0;
     ServerSocketThread server;
     ChatServerListener listener;
+
+    private FileWriter historyLogWriter = null;
+    private File historyLogFile = null;
 
     public ChatServer(ChatServerListener listener) {
         this.listener = listener;
@@ -48,6 +55,68 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         listener.onChatServerMessage(msg);
     }
 
+    private void createHistoryLogFile () {
+        historyLogFile = new File("server_history_log.txt");
+        try {
+            historyLogFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void createWriterStream(File file) {
+        try {
+            historyLogWriter = new FileWriter(file, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeWriterStream() {
+        if (historyLogWriter != null) {
+            try {
+                historyLogWriter.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void writeToLogFile(String src, String msg) {
+        String textLine = DATE_FORMAT.format(System.currentTimeMillis()) + src + ": " + msg + "\n";
+        try {
+            historyLogWriter.write(textLine);
+            historyLogWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendChatHistory (ClientThread client) {
+        ArrayList<String> reversedLogLines = getLastLinesFromFile(historyLogFile, 100);
+        for (int i = 99; i >= 0; i--) {
+            client.sendMessage(Messages.getHistoryLog(reversedLogLines.get(i)));
+        }
+    }
+
+    private ArrayList<String> getLastLinesFromFile(File file, int amount) {
+        ArrayList<String> reversedLogLines = new ArrayList<>();
+        try (ReversedLinesFileReader reader = ReversedLinesFileReader.builder()
+                .setFile(file)
+                .setBufferSize(4096)
+                .setCharset(StandardCharsets.UTF_8)
+                .get()) {
+            int counter = amount;
+            while(counter > 0) {
+                reversedLogLines.add(reader.readLine());
+                counter--;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return reversedLogLines;
+    }
+
     /**
      * Server socket thread methods
      * */
@@ -56,6 +125,8 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
     public void onServerStart(ServerSocketThread thread) {
         putLog("Server thread started");
         SqlClient.connect();
+        createHistoryLogFile();
+        createWriterStream(historyLogFile);
     }
 
     @Override
@@ -65,6 +136,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         for (int i = 0; i < clients.size(); i++) {
             clients.get(i).close();
         }
+        closeWriterStream();
     }
 
     @Override
@@ -148,6 +220,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
         switch (msgType) {
             case Messages.USER_BROADCAST:
                 sendToAllAuthorized(Messages.getTypeBroadcast(client.getNickname(), arr[1]));
+                writeToLogFile(client.getNickname(), arr[1]);
                 break;
             case Messages.PASSCHANGE_REQUEST:
                 String newPass = arr[1];
@@ -214,6 +287,7 @@ public class ChatServer implements ServerSocketThreadListener, SocketThreadListe
                 } else {
                     ClientThread oldClient = findClientByNickname(nickname);
                     client.authAccept(nickname);
+                    sendChatHistory(client);
                     if (oldClient == null){
                         sendToAllAuthorized(Messages.getTypeBroadcast("Server", nickname + " connected."));
                     } else {
