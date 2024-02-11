@@ -16,6 +16,7 @@ public class Messages {
     public static final String PASSCHANGE_SUCCEED = "/passchange_succeed";
     public static final String NAMECHANGE_REQUEST = "/namechange_request";
     public static final String NAMECHANGE_SUCCEED = "/namechange_succeed";
+    public static final String HISTORY_LOG = "/history_log";
 
     public static final String MSG_SIGNUP_SUCCEED = "User %s successfully created";
     public static final String MSG_PASSCHANGE_SUCCEED = "Password for user %s has been successfully changed";
@@ -103,5 +104,9 @@ public class Messages {
 
     public static String getPasschangeFailed() {
         return FAILED + DELIMITER + MSG_PASSCHANGE_FAILED;
+    }
+
+    public static String getHistoryLog(String msg) {
+        return HISTORY_LOG + DELIMITER + msg;
     }
 }
