@@ -135,6 +135,7 @@ public class Client extends JFrame implements ActionListener, Thread.UncaughtExc
         try {
             Socket socket = new Socket(tfIPAddress.getText(), Integer.parseInt(tfPort.getText()));
             socketThread = new SocketThread(this, "Client", socket);
+            socketThread.start();
         } catch (IOException e) {
             showException(Thread.currentThread(), e);
         }
